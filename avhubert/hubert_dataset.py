@@ -283,7 +283,7 @@ class AVHubertDataset(FairseqDataset):
             assert sample_rate == 16_000 and len(wav_data.shape) == 1
             if np.random.rand() < self.noise_prob:
                 wav_data = self.add_noise(wav_data)
-            audio_feats = logfbank(wav_data, samplerate=sample_rate).astype(np.float32) # [T, F]
+            audio_feats = logfbank(wav_data, samplerate=sample_rate).astype(np.float64) # [T, F]
             audio_feats = stacker(audio_feats, self.stack_order_audio) # [T/stack_order_audio, F*stack_order_audio]
         else:
             audio_feats = None
@@ -305,7 +305,7 @@ class AVHubertDataset(FairseqDataset):
         rand_indexes = np.random.randint(0, len(self.noise_wav), size=self.noise_num)
         noise_wav = []
         for x in rand_indexes:
-            noise_wav.append(wavfile.read(self.noise_wav[x])[1].astype(np.float32))
+            noise_wav.append(wavfile.read(self.noise_wav[x])[1].astype(np.float64))
         if self.noise_num == 1:
             return noise_wav[0]
         else:
@@ -315,7 +315,7 @@ class AVHubertDataset(FairseqDataset):
             return noise_wav
 
     def add_noise(self, clean_wav):
-        clean_wav = clean_wav.astype(np.float32)
+        clean_wav = clean_wav.astype(np.float64)
         noise_wav = self.select_noise()
         if type(self.noise_snr) == int or type(self.noise_snr) == float:
             snr = self.noise_snr
@@ -347,7 +347,7 @@ class AVHubertDataset(FairseqDataset):
 
     def __getitem__(self, index):
         video_feats, audio_feats = self.load_feature(self.names[index])
-        audio_feats, video_feats = torch.from_numpy(audio_feats.astype(np.float32)) if audio_feats is not None else None, torch.from_numpy(video_feats.astype(np.float32)) if video_feats is not None else None
+        audio_feats, video_feats = torch.from_numpy(audio_feats.astype(np.float64)) if audio_feats is not None else None, torch.from_numpy(video_feats.astype(np.float64)) if video_feats is not None else None
         if self.normalize and 'audio' in self.modalities:
             with torch.no_grad():
                 audio_feats = F.layer_norm(audio_feats, audio_feats.shape[1:])

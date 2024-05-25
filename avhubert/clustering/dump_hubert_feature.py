@@ -66,7 +66,7 @@ class HubertFeatureReader(object):
         audio_fn = audio_fn.split(':')[0]
         sample_rate, wav_data = wavfile.read(audio_fn)
         assert sample_rate == 16_000 and len(wav_data.shape) == 1
-        audio_feats = logfbank(wav_data, samplerate=sample_rate).astype(np.float32)
+        audio_feats = logfbank(wav_data, samplerate=sample_rate).astype(np.float64)
         audio_feats = stacker(audio_feats, self.stack_order_audio)
 
         diff = len(audio_feats) - len(video_feats)
@@ -85,7 +85,7 @@ class HubertFeatureReader(object):
     def get_feats(self, path, ref_len=None):
         video_feats, audio_feats = self.load_feature(path, ref_len)
         with torch.no_grad():
-            audio_feats, video_feats = torch.from_numpy(audio_feats.astype(np.float32)).cuda(), torch.from_numpy(video_feats.astype(np.float32)).cuda()
+            audio_feats, video_feats = torch.from_numpy(audio_feats.astype(np.float64)).cuda(), torch.from_numpy(video_feats.astype(np.float64)).cuda()
             if self.task.cfg.normalize:
                 audio_feats = F.layer_norm(audio_feats, audio_feats.shape[1:])
             video_feats = video_feats.unsqueeze(dim=0).permute((0, 4, 1, 2, 3)).contiguous()
